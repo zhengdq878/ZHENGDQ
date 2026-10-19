@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/ZHENGDQ/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/ZHENGDQ/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/ZHENGDQ/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/ZHENGDQ/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/ZHENGDQ/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"zhengdq878.github.io","root":"/ZHENGDQ/","images":"/ZHENGDQ/images","scheme":"Muse","darkmode":true,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/ZHENGDQ/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/ZHENGDQ/js/config.js" defer></script>
+
+    <meta name="description" content="📌 摘要：同事在用 EWMS 系统调用生产订单 261 扣料接口时发现，当生产订单预留存在两行相同物料时，系统只找第一行扣预留占用数量，且不校验扣料数量是否超过预留数量，导致第二行预留未被释放。本文记录问题根因，以及从「手动处理」到「接口方案调整 + SE11 结构加预留行号 + 改造扣料代码」的完整根治过程。   一、问题背景上周，同事使用 EWMS 系统调用生产订单 261 扣料接口时发现">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SAP调用BAPI做生产订单261扣料">
+<meta property="og:url" content="https://zhengdq878.github.io/ZHENGDQ/posts/obs-098bc187c3ff061a/index.html">
+<meta property="og:site_name" content="川流不息的技术博客">
+<meta property="og:description" content="📌 摘要：同事在用 EWMS 系统调用生产订单 261 扣料接口时发现，当生产订单预留存在两行相同物料时，系统只找第一行扣预留占用数量，且不校验扣料数量是否超过预留数量，导致第二行预留未被释放。本文记录问题根因，以及从「手动处理」到「接口方案调整 + SE11 结构加预留行号 + 改造扣料代码」的完整根治过程。   一、问题背景上周，同事使用 EWMS 系统调用生产订单 261 扣料接口时发现">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zhengdq878.github.io/ZHENGDQ/ZHENGDQ/images/obsidian/577f41b5f7030341.png">
+<meta property="og:image" content="https://zhengdq878.github.io/ZHENGDQ/ZHENGDQ/images/obsidian/587ce040d3a45415.png">
+<meta property="og:image" content="https://zhengdq878.github.io/ZHENGDQ/ZHENGDQ/images/obsidian/25d5be55385e343d.png">
+<meta property="article:published_time" content="2026-10-19T07:44:46.000Z">
+<meta property="article:modified_time" content="2026-10-19T07:48:20.919Z">
+<meta property="article:author" content="郑东祁（川流不息）">
+<meta property="article:tag" content="SAP">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zhengdq878.github.io/ZHENGDQ/ZHENGDQ/images/obsidian/577f41b5f7030341.png">
+
+
+<link rel="canonical" href="https://zhengdq878.github.io/ZHENGDQ/posts/obs-098bc187c3ff061a/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://zhengdq878.github.io/ZHENGDQ/posts/obs-098bc187c3ff061a/","path":"/posts/obs-098bc187c3ff061a/","title":"SAP调用BAPI做生产订单261扣料"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>SAP调用BAPI做生产订单261扣料 | 川流不息的技术博客</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/ZHENGDQ/js/utils.js" defer></script><script src="/ZHENGDQ/js/motion.js" defer></script><script src="/ZHENGDQ/js/sidebar.js" defer></script><script src="/ZHENGDQ/js/next-boot.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.5.0/search.js" integrity="sha256-xFC6PJ82SL9b3WkGjFavNiA9gm5z6UBxWPiu4CYjptg=" crossorigin="anonymous" defer></script>
+<script src="/ZHENGDQ/js/third-party/search/local-search.js" defer></script>
+
+
+  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.10.1/mermaid.min.js","integrity":"sha256-BmQmdWDS8X2OTbrwELWK366LV6escyWhHHe0XCTU/Hk="}}</script>
+  <script src="/ZHENGDQ/js/third-party/tags/mermaid.js" defer></script>
+
+
+
+
+
+  
+
+
+
+
+<link rel="dns-prefetch" href="https://xxx.vercel.app">
+  <noscript>
+    <link rel="stylesheet" href="/ZHENGDQ/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/ZHENGDQ/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">川流不息的技术博客</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">SAP顾问 | IT与AI技术探索</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/ZHENGDQ/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/ZHENGDQ/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">1</span></a></li><li class="menu-item menu-item-tags"><a href="/ZHENGDQ/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">1</span></a></li><li class="menu-item menu-item-categories"><a href="/ZHENGDQ/categories/" rel="section"><i class="fa fa-layer-group fa-fw"></i>分类<span class="badge">0</span></a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E9%97%AE%E9%A2%98%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text">一、问题背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E5%8E%9F%E5%9B%A0%E5%88%86%E6%9E%90"><span class="nav-number">2.</span> <span class="nav-text">二、原因分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="nav-number">3.</span> <span class="nav-text">三、解决方案</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E6%AD%A5%EF%BC%9A%E5%A4%84%E7%90%86%E5%BD%93%E5%89%8D%E8%AE%A2%E5%8D%95"><span class="nav-number">3.1.</span> <span class="nav-text">第一步：处理当前订单</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E6%AD%A5%EF%BC%9A%E8%B0%83%E6%95%B4%E6%8E%A5%E5%8F%A3"><span class="nav-number">3.2.</span> <span class="nav-text">第二步：调整接口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%89%E6%AD%A5%EF%BC%9A%E6%94%B9%E9%80%A0%E4%BB%A3%E7%A0%81%E8%90%BD%E5%9C%B0"><span class="nav-number">3.3.</span> <span class="nav-text">第三步：改造代码落地</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-SE11-%E6%96%B0%E5%A2%9E%E9%A2%84%E7%95%99%E8%A1%8C%E5%8F%B7%E5%AD%97%E6%AE%B5"><span class="nav-number">3.3.1.</span> <span class="nav-text">3.1 SE11 新增预留行号字段</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-%E4%BF%AE%E6%94%B9%E6%89%A3%E6%96%99%E4%BB%A3%E7%A0%81"><span class="nav-number">3.3.2.</span> <span class="nav-text">3.2 修改扣料代码</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E6%B5%8B%E8%AF%95%E9%AA%8C%E8%AF%81"><span class="nav-number">4.</span> <span class="nav-text">四、测试验证</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E7%BB%8F%E9%AA%8C%E6%80%BB%E7%BB%93"><span class="nav-number">5.</span> <span class="nav-text">五、经验总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="郑东祁（川流不息）"
+      src="/ZHENGDQ/images/profile/407d4bf687695938.png">
+  <p class="site-author-name" itemprop="name">郑东祁（川流不息）</p>
+  <div class="site-description" itemprop="description">郑东祁的个人技术博客，专注于SAP系统实施、IT技术与AI技术的研究与分享、生活分享。</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/ZHENGDQ/archives/">
+          <span class="site-state-item-count">1</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/ZHENGDQ/tags/">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zhengdq878" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zhengdq878" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://zhengdq878.github.io/ZHENGDQ/posts/obs-098bc187c3ff061a/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/ZHENGDQ/images/profile/407d4bf687695938.png">
+      <meta itemprop="name" content="郑东祁（川流不息）">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="川流不息的技术博客">
+      <meta itemprop="description" content="郑东祁的个人技术博客，专注于SAP系统实施、IT技术与AI技术的研究与分享、生活分享。">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="SAP调用BAPI做生产订单261扣料 | 川流不息的技术博客">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SAP调用BAPI做生产订单261扣料
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-10-19 15:44:46 / 修改时间：15:48:20" itemprop="dateCreated datePublished" datetime="2026-10-19T15:44:46+08:00">2026-10-19</time>
+    </span>
+
+  
+  
+  <span class="post-meta-item">
+    
+    <span class="post-meta-item-icon">
+      <i class="far fa-comment"></i>
+    </span>
+    <span class="post-meta-item-text">Waline：</span>
+  
+    <a title="waline" href="/ZHENGDQ/posts/obs-098bc187c3ff061a/#waline" itemprop="discussionUrl">
+      <span class="post-comments-count waline-comment-count" data-path="/ZHENGDQ/posts/obs-098bc187c3ff061a/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1.3k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>2 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><blockquote>
+<p>📌 <strong>摘要</strong>：同事在用 EWMS 系统调用生产订单 261 扣料接口时发现，当生产订单预留存在<strong>两行相同物料</strong>时，系统只找<strong>第一行</strong>扣预留占用数量，且不校验扣料数量是否超过预留数量，导致<strong>第二行预留未被释放</strong>。本文记录问题根因，以及从「手动处理」到「接口方案调整 + SE11 结构加预留行号 + 改造扣料代码」的完整根治过程。</p>
+</blockquote>
+<hr>
+<h2 id="一、问题背景"><a href="#一、问题背景" class="headerlink" title="一、问题背景"></a>一、问题背景</h2><p>上周，同事使用 <strong>EWMS 系统</strong>调用生产订单 <strong>261 扣料接口</strong>时发现：</p>
+<ul>
+<li>生产订单预留中有<strong>两行相同物料</strong>时，系统会直接找<strong>第一行物料</strong>扣预留占用数量，且<strong>没有校验</strong>扣料的数量是否超过了该行预留的数量。</li>
+</ul>
+<h2 id="二、原因分析"><a href="#二、原因分析" class="headerlink" title="二、原因分析"></a>二、原因分析</h2><p>查看接口结构后发现，问题出在<strong>预留定位方式</strong>上：</p>
+<blockquote>
+<p>接口中<strong>没有预留号、预留行号字段</strong>，而是通过 <strong>生产订单号 + 物料号</strong> 去 SELECT 预留单号，再赋值调用 BAPI 扣料。</p>
+</blockquote>
+<p>由于该工厂启用了 <strong>MRP</strong>，扣料没有精确到预留行，相当于<strong>第二行的预留没有被释放</strong>，最终导致异常。</p>
+<h2 id="三、解决方案"><a href="#三、解决方案" class="headerlink" title="三、解决方案"></a>三、解决方案</h2><h3 id="第一步：处理当前订单"><a href="#第一步：处理当前订单" class="headerlink" title="第一步：处理当前订单"></a>第一步：处理当前订单</h3><p>先手动勾选<strong>第二行的「发货完成」标识</strong>，解决当前这张订单的问题。</p>
+<h3 id="第二步：调整接口"><a href="#第二步：调整接口" class="headerlink" title="第二步：调整接口"></a>第二步：调整接口</h3><p>调整接口逻辑，改由<strong>外围系统传递预留号 &#x2F; 生产订单号 + 预留行号</strong>，扣料时精确定位到预留行，<strong>精确释放预留</strong>。</p>
+<h3 id="第三步：改造代码落地"><a href="#第三步：改造代码落地" class="headerlink" title="第三步：改造代码落地"></a>第三步：改造代码落地</h3><h4 id="3-1-SE11-新增预留行号字段"><a href="#3-1-SE11-新增预留行号字段" class="headerlink" title="3.1 SE11 新增预留行号字段"></a>3.1 SE11 新增预留行号字段</h4><p>在结构 <strong>ZST_PACK_ORDER_ISS_ITEM</strong> 中新增 <strong>RSPOS（预留行号）</strong> 字段：</p>
+<p><img src="/ZHENGDQ/ZHENGDQ/images/obsidian/577f41b5f7030341.png" alt="Pasted image 20260810224314.png"></p>
+<p><em>▲ 图 1：SE11 数据字典中打开结构 ZST_PACK_ORDER_ISS_ITEM</em></p>
+<p><img src="/ZHENGDQ/ZHENGDQ/images/obsidian/587ce040d3a45415.png" alt="Pasted image 20260810224358.png"></p>
+<p><em>▲ 图 2：组件列表新增 RSPOS（预留&#x2F;相关需求的项目编号）字段</em></p>
+<p>保存后<strong>激活</strong>结构即可。</p>
+<h4 id="3-2-修改扣料代码"><a href="#3-2-修改扣料代码" class="headerlink" title="3.2 修改扣料代码"></a>3.2 修改扣料代码</h4><p>在扣料函数（<code>ZTYN_MS_ORDER_ISS2</code>）中，仍按 <strong>生产订单号 + 物料号</strong> 从 RESB 查出预留单号（RSNUM），但预留行号直接使用外围系统传来的 <strong>RSPOS</strong>：</p>
+<p><img src="/ZHENGDQ/ZHENGDQ/images/obsidian/25d5be55385e343d.png" alt="Pasted image 20260810224536.png"></p>
+<p><em>▲ 图 3：扣料代码——SELECT 预留单号，预留行号用外围传入的 RSPOS</em></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">SELECT RSNUM RSPOS MATNR AUFNR FROM RESB</span><br><span class="line">  INTO LS_RESB</span><br><span class="line">  WHERE AUFNR = LS_ORDER_ISS_ITEM1-AUFNR</span><br><span class="line">    AND MATNR = LS_ORDER_ISS_ITEM1-MATNR.</span><br><span class="line">ENDSELECT.</span><br><span class="line"></span><br><span class="line">LT_GOODSMVT_ITEM-RESERV_NO = LS_RESB-RSNUM.</span><br><span class="line">LT_GOODSMVT_ITEM-RES_ITEM  = LS_ORDER_ISS_ITEM1-RSPOS.</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>💡 <strong>插曲</strong>：这里之所以还要再去 SELECT 一次预留号，是因为<strong>之前的生产订单同步接口没有把预留号同步给 EWMS</strong>。</p>
+</blockquote>
+<h2 id="四、测试验证"><a href="#四、测试验证" class="headerlink" title="四、测试验证"></a>四、测试验证</h2><p>今天同步做了另外一个测试：</p>
+<ul>
+<li>如果传输的物料<strong>不传预留号、行号，只传物料号</strong>，也是可以扣料的；</li>
+<li>但此时走的是<strong>计划外扣料</strong>，无法对应到具体预留行。</li>
+</ul>
+<h2 id="五、经验总结"><a href="#五、经验总结" class="headerlink" title="五、经验总结"></a>五、经验总结</h2><ol>
+<li>生产订单 261 扣料时，<strong>预留定位必须精确到预留号 + 预留行号</strong>，仅靠「生产订单 + 物料号」定位，多行相同物料时容易扣错行。</li>
+<li>启用 <strong>MRP</strong> 的工厂，预留行未释放会造成预留占用异常，需及时处理。</li>
+<li>外围系统接口设计时，建议<strong>由外围系统传入预留号 &#x2F; 预留行号</strong>，从源头避免扣错。</li>
+<li>物料数量调整，优先用 <strong>CO02 修改 BOM 数量</strong>，而不是新增预留行。</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/ZHENGDQ/tags/SAP/" rel="tag"># SAP</a>
+          </div>
+
+        
+
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments" id="waline"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">郑东祁（川流不息）</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">1k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">2 分钟</span>
+  </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<script class="next-config" data-name="waline" type="application/json">{"lang":"zh-CN","enable":true,"serverURL":"https://xxx.vercel.app","cssUrl":"https://unpkg.com/@waline/client@v2/dist/waline.css","commentCount":true,"pageview":false,"el":"#waline","comment":true,"libUrl":"//unpkg.com/@waline/client@v2/dist/waline.js","path":"/ZHENGDQ/posts/obs-098bc187c3ff061a/"}</script>
+<link rel="stylesheet" href="https://unpkg.com/@waline/client@v2/dist/waline.css">
+<script>
+document.addEventListener('page:loaded', () => {
+  NexT.utils.loadComments(CONFIG.waline.el).then(() =>
+    NexT.utils.getScript(CONFIG.waline.libUrl, { condition: window.Waline })
+  ).then(() => 
+    Waline.init(Object.assign({}, CONFIG.waline,{ el: document.querySelector(CONFIG.waline.el) }))
+  );
+});
+</script>
+
+</body>
+</html>
