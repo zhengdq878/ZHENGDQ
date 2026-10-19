@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>Hello World</title>
+    <url>/ZHENGDQ/2026/10/19/hello-world/</url>
+    <content><![CDATA[Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.
+Quick StartCreate a new post$ hexo new &quot;My New Post&quot;
+
+More info: Writing
+Run server$ hexo server
+
+More info: Server
+Generate static files$ hexo generate
+
+More info: Generating
+Deploy to remote sites$ hexo deploy
+
+More info: Deployment
+]]></content>
+  </entry>
+  <entry>
+    <title>欢迎来到我的博客</title>
+    <url>/ZHENGDQ/2026/10/19/welcome/</url>
+    <content><![CDATA[这里记录学习、工作与生活。博客使用 Hexo 7 和 NexT 主题，支持阅读时长、本地搜索与 Mermaid 图表，并接入 Waline 评论。
+
+
+Mermaid 示例
+
+graph TD
+A[撰写文章] --&gt; B[生成静态页面]
+B --&gt; C[发布到 GitHub Pages]
+
+
+
+点击导航中的搜索按钮，输入“欢迎”即可找到本文。文章下方为评论区。
+]]></content>
+      <tags>
+        <tag>博客</tag>
+      </tags>
+  </entry>
+</search>
