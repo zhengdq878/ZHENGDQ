@@ -106,7 +106,7 @@
 
 
 <nav class="site-nav">
-  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/ZHENGDQ/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/ZHENGDQ/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">1</span></a></li><li class="menu-item menu-item-tags"><a href="/ZHENGDQ/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">1</span></a></li><li class="menu-item menu-item-categories"><a href="/ZHENGDQ/categories/" rel="section"><i class="fa fa-layer-group fa-fw"></i>分类<span class="badge">0</span></a></li>
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/ZHENGDQ/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-archives"><a href="/ZHENGDQ/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档<span class="badge">0</span></a></li><li class="menu-item menu-item-tags"><a href="/ZHENGDQ/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签<span class="badge">0</span></a></li><li class="menu-item menu-item-categories"><a href="/ZHENGDQ/categories/" rel="section"><i class="fa fa-layer-group fa-fw"></i>分类<span class="badge">0</span></a></li>
       <li class="menu-item menu-item-search">
         <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
         </a>
@@ -169,17 +169,6 @@
 </div>
 <div class="site-state-wrap animated">
   <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-        <a href="/ZHENGDQ/archives/">
-          <span class="site-state-item-count">1</span>
-          <span class="site-state-item-name">日志</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-tags">
-          <a href="/ZHENGDQ/tags/">
-        <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">标签</span></a>
-      </div>
   </nav>
 </div>
   <div class="links-of-author animated">
@@ -199,144 +188,6 @@
     </div>
 
     <div class="main-inner index posts-expand">
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://zhengdq878.github.io/ZHENGDQ/posts/obs-098bc187c3ff061a/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/ZHENGDQ/images/profile/407d4bf687695938.png">
-      <meta itemprop="name" content="郑东祁（川流不息）">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="川流不息的技术博客">
-      <meta itemprop="description" content="郑东祁的个人技术博客，专注于SAP系统实施、IT技术与AI技术的研究与分享、生活分享。">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | 川流不息的技术博客">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/ZHENGDQ/posts/obs-098bc187c3ff061a/" class="post-title-link" itemprop="url">SAP调用BAPI做生产订单261扣料</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-      
-
-      <time title="创建时间：2026-10-19 15:44:46 / 修改时间：15:50:59" itemprop="dateCreated datePublished" datetime="2026-10-19T15:44:46+08:00">2026-10-19</time>
-    </span>
-
-  
-  
-  <span class="post-meta-item">
-    
-    <span class="post-meta-item-icon">
-      <i class="far fa-comment"></i>
-    </span>
-    <span class="post-meta-item-text">Waline：</span>
-  
-    <a title="waline" href="/ZHENGDQ/posts/obs-098bc187c3ff061a/#waline" itemprop="discussionUrl">
-      <span class="post-comments-count waline-comment-count" data-path="/ZHENGDQ/posts/obs-098bc187c3ff061a/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>1.3k</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>2 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote>
-<p>📌 <strong>摘要</strong>：同事在用 EWMS 系统调用生产订单 261 扣料接口时发现，当生产订单预留存在<strong>两行相同物料</strong>时，系统只找<strong>第一行</strong>扣预留占用数量，且不校验扣料数量是否超过预留数量，导致<strong>第二行预留未被释放</strong>。本文记录问题根因，以及从「手动处理」到「接口方案调整 + SE11 结构加预留行号 + 改造扣料代码」的完整根治过程。</p>
-</blockquote>
-<hr>
-<h2 id="一、问题背景"><a href="#一、问题背景" class="headerlink" title="一、问题背景"></a>一、问题背景</h2><p>上周，同事使用 <strong>EWMS 系统</strong>调用生产订单 <strong>261 扣料接口</strong>时发现：</p>
-<ul>
-<li>生产订单预留中有<strong>两行相同物料</strong>时，系统会直接找<strong>第一行物料</strong>扣预留占用数量，且<strong>没有校验</strong>扣料的数量是否超过了该行预留的数量。</li>
-</ul>
-<h2 id="二、原因分析"><a href="#二、原因分析" class="headerlink" title="二、原因分析"></a>二、原因分析</h2><p>查看接口结构后发现，问题出在<strong>预留定位方式</strong>上：</p>
-<blockquote>
-<p>接口中<strong>没有预留号、预留行号字段</strong>，而是通过 <strong>生产订单号 + 物料号</strong> 去 SELECT 预留单号，再赋值调用 BAPI 扣料。</p>
-</blockquote>
-<p>由于该工厂启用了 <strong>MRP</strong>，扣料没有精确到预留行，相当于<strong>第二行的预留没有被释放</strong>，最终导致异常。</p>
-<h2 id="三、解决方案"><a href="#三、解决方案" class="headerlink" title="三、解决方案"></a>三、解决方案</h2><h3 id="第一步：处理当前订单"><a href="#第一步：处理当前订单" class="headerlink" title="第一步：处理当前订单"></a>第一步：处理当前订单</h3><p>先手动勾选<strong>第二行的「发货完成」标识</strong>，解决当前这张订单的问题。</p>
-<h3 id="第二步：调整接口"><a href="#第二步：调整接口" class="headerlink" title="第二步：调整接口"></a>第二步：调整接口</h3><p>调整接口逻辑，改由<strong>外围系统传递预留号 &#x2F; 生产订单号 + 预留行号</strong>，扣料时精确定位到预留行，<strong>精确释放预留</strong>。</p>
-<h3 id="第三步：改造代码落地"><a href="#第三步：改造代码落地" class="headerlink" title="第三步：改造代码落地"></a>第三步：改造代码落地</h3><h4 id="3-1-SE11-新增预留行号字段"><a href="#3-1-SE11-新增预留行号字段" class="headerlink" title="3.1 SE11 新增预留行号字段"></a>3.1 SE11 新增预留行号字段</h4><p>在结构 <strong>ZST_PACK_ORDER_ISS_ITEM</strong> 中新增 <strong>RSPOS（预留行号）</strong> 字段：</p>
-<p><img src="/ZHENGDQ/images/obsidian/577f41b5f7030341.png" alt="Pasted image 20260810224314.png"></p>
-<p><em>▲ 图 1：SE11 数据字典中打开结构 ZST_PACK_ORDER_ISS_ITEM</em></p>
-<p><img src="/ZHENGDQ/images/obsidian/587ce040d3a45415.png" alt="Pasted image 20260810224358.png"></p>
-<p><em>▲ 图 2：组件列表新增 RSPOS（预留&#x2F;相关需求的项目编号）字段</em></p>
-<p>保存后<strong>激活</strong>结构即可。</p>
-<h4 id="3-2-修改扣料代码"><a href="#3-2-修改扣料代码" class="headerlink" title="3.2 修改扣料代码"></a>3.2 修改扣料代码</h4><p>在扣料函数（<code>ZTYN_MS_ORDER_ISS2</code>）中，仍按 <strong>生产订单号 + 物料号</strong> 从 RESB 查出预留单号（RSNUM），但预留行号直接使用外围系统传来的 <strong>RSPOS</strong>：</p>
-<p><img src="/ZHENGDQ/images/obsidian/25d5be55385e343d.png" alt="Pasted image 20260810224536.png"></p>
-<p><em>▲ 图 3：扣料代码——SELECT 预留单号，预留行号用外围传入的 RSPOS</em></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">SELECT RSNUM RSPOS MATNR AUFNR FROM RESB</span><br><span class="line">  INTO LS_RESB</span><br><span class="line">  WHERE AUFNR = LS_ORDER_ISS_ITEM1-AUFNR</span><br><span class="line">    AND MATNR = LS_ORDER_ISS_ITEM1-MATNR.</span><br><span class="line">ENDSELECT.</span><br><span class="line"></span><br><span class="line">LT_GOODSMVT_ITEM-RESERV_NO = LS_RESB-RSNUM.</span><br><span class="line">LT_GOODSMVT_ITEM-RES_ITEM  = LS_ORDER_ISS_ITEM1-RSPOS.</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>💡 <strong>插曲</strong>：这里之所以还要再去 SELECT 一次预留号，是因为<strong>之前的生产订单同步接口没有把预留号同步给 EWMS</strong>。</p>
-</blockquote>
-<h2 id="四、测试验证"><a href="#四、测试验证" class="headerlink" title="四、测试验证"></a>四、测试验证</h2><p>今天同步做了另外一个测试：</p>
-<ul>
-<li>如果传输的物料<strong>不传预留号、行号，只传物料号</strong>，也是可以扣料的；</li>
-<li>但此时走的是<strong>计划外扣料</strong>，无法对应到具体预留行。</li>
-</ul>
-<h2 id="五、经验总结"><a href="#五、经验总结" class="headerlink" title="五、经验总结"></a>五、经验总结</h2><ol>
-<li>生产订单 261 扣料时，<strong>预留定位必须精确到预留号 + 预留行号</strong>，仅靠「生产订单 + 物料号」定位，多行相同物料时容易扣错行。</li>
-<li>启用 <strong>MRP</strong> 的工厂，预留行未释放会造成预留占用异常，需及时处理。</li>
-<li>外围系统接口设计时，建议<strong>由外围系统传入预留号 &#x2F; 预留行号</strong>，从源头避免扣错。</li>
-<li>物料数量调整，优先用 <strong>CO02 修改 BOM 数量</strong>，而不是新增预留行。</li>
-</ol>
-
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
 
 
 </div>
@@ -358,13 +209,13 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-line"></i>
     </span>
-    <span title="站点总字数">1k</span>
+    <span title="站点总字数">0k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">2 分钟</span>
+    <span title="站点阅读时长">1 分钟</span>
   </span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
